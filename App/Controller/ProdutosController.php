@@ -47,5 +47,4 @@ class ProdutosController
         var_dump($this->request->getRequest());
         echo "create";
     }
-
 }

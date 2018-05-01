@@ -25,8 +25,8 @@ $dispatch = new Http\Dispatch($router);
 
  try {
      //Método responsável por carregar o recurso com base na URL
-    $dispatch->run();
+     $dispatch->run();
  } catch (Exception $ex) {
      //Caso algum erro aconteça usamos essa classe para exibir.
-    App\Error\Error::show($ex->getMessage());
+     App\Error\Error::show($ex->getMessage());
  }

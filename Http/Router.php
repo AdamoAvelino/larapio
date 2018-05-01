@@ -20,20 +20,20 @@ class Router
 
     /**
      * -------------------------------------------------------------------------
-     * @var Http\Request Propriedade que carrega o objeto Request 
+     * @var Http\Request Propriedade que carrega o objeto Request
      */
     public $request;
 
     /* ---------------------------------------------------------------------
-     * @var array Contém o obejeto MontaRota da requisição atual  
-     * 
+     * @var array Contém o obejeto MontaRota da requisição atual
+     *
      */
     private $rota = false;
 
     /**
      * -------------------------------------------------------------------------
-     * @var Array carrega um string concatenada especificando o metodo e 
-     * o controller a ser executado que servirá como chave do array 
+     * @var Array carrega um string concatenada especificando o metodo e
+     * o controller a ser executado que servirá como chave do array
      * da propriedade rotas, para recuperar a rota correta vinda do request
      */
     private $chaveRotas;
@@ -48,13 +48,12 @@ class Router
     /**
      * ---------------------------------------------------------------------<br>
      * Carrega os recursos necessários para a classe
-     * @param Http\Request $request  Alimenta a propriedade request com 
+     * @param Http\Request $request  Alimenta a propriedade request com
      * uma injeção de dependencia do objeto request.
      * @return void
      */
     public function setRequest(Request $request)
     {
-
         $this->request = $request;
         $this->rota = $this->matchRouter();
     }
@@ -63,15 +62,15 @@ class Router
      * ---------------------------------------------------------------------<br>
      * [Metodo Monta todas as possiveis rotas através do objeto MontaRota]
      * @param String $nome nome do metodo diparado, que servirá para decidir
-     * qual verbo do HTTP será usado na requisição 
+     * qual verbo do HTTP será usado na requisição
      * <b>Opções</b>:
      * <ul>
      * <li>GET</li>
      * <li>POST</li>
      * </ul>
-     * 
-     * @param Array $argumentos todos os argumentos que estão na chamda 
-     * do metodo magico 
+     *
+     * @param Array $argumentos todos os argumentos que estão na chamda
+     * do metodo magico
      */
     public function __call($nome, $argumentos)
     {
@@ -98,7 +97,6 @@ class Router
     {
         $this->chaveRotas = $this->request->getUrl();
         if (isset($this->listaRotas[$this->chaveRotas]) or $this->chaveRotas) {
-            
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
             
             if ($rota) {
@@ -112,20 +110,18 @@ class Router
     }
 
     /**
-     * [Metodo responsável por iniciar a propriedade <i>rota</i> com um dos objetos 
+     * [Metodo responsável por iniciar a propriedade <i>rota</i> com um dos objetos
      * MotaRota listados na propriedade <i>listaRota</i>]
      * @param MontarRota $rota - Objeto rota definido de acordo com request
-     * @return boolean|MontarRota - retorna a rota de acordo com o verbo 
+     * @return boolean|MontarRota - retorna a rota de acordo com o verbo
      * configurado e o verbo solicitado na requisição e se também está correto
-     * a quantidade de parametros 
+     * a quantidade de parametros
      */
     private function hasParametros(MontarRota $rota)
     {
         if ($this->matchParans($rota) == 'GET') {
-            
             if (count($this->request->getQuery()) == count($rota->getParametros())) {
                 return $rota;
-                
             }
         }
 
@@ -139,9 +135,9 @@ class Router
 
     /**
      * ----------------------------------------------------------------------<br>
-     * [Método que valida a quantidade de parametros vindas por uma das variaveis 
+     * [Método que valida a quantidade de parametros vindas por uma das variaveis
      * globais GET ou POST com a quantidade dos parametros configuradas na rota]
-     * @param  Http\MontarRota  $rota [Objeto monta rota que carrega todas as 
+     * @param  Http\MontarRota  $rota [Objeto monta rota que carrega todas as
      * configurações da rota em questão]
      * @return String [Verbo configurado na rota]
      */
@@ -167,7 +163,6 @@ class Router
      */
     public function getController()
     {
-
         return $this->rota->getController();
     }
 
@@ -190,5 +185,4 @@ class Router
     {
         return $this->request->getParametros();
     }
-
 }

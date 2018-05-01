@@ -6,10 +6,11 @@ use Http\Router;
 use App\Error\Error;
 
 /**
- * Classe (Padrão Factory): Responsável por carregar o controlador, método com 
+ * Classe (Padrão Factory): Responsável por carregar o controlador, método com
  * seus respectivos atributos configurados no Objeto Router
  */
-class Dispatch {
+class Dispatch
+{
 
     /**
      * ---------------------------------------------------------------------<br>
@@ -27,19 +28,21 @@ class Dispatch {
      * ---------------------------------------------------------------------<br>
      * [Metodo Construtor: Guarda a instancia de route no atributo local no
      * momento em que é instanciado]
-     * @param Http\Router $router 
+     * @param Http\Router $router
      */
-    public function __construct(Router $router) {
+    public function __construct(Router $router)
+    {
         $this->router = $router;
     }
 
     /**
      * ---------------------------------------------------------------------<br>
-     * [Responsável por iniciar toda a aplicação, baseado na configuração das 
-     * rotas no <i>Objeto Router </i> e na requisição tratado pelo <i>Objeto 
+     * [Responsável por iniciar toda a aplicação, baseado na configuração das
+     * rotas no <i>Objeto Router </i> e na requisição tratado pelo <i>Objeto
      * Request </i>]
      */
-    public function run() {
+    public function run()
+    {
         $controller = $this->controllerNamespace . $this->router->getController();
         $method = $this->router->getMethod();
 
@@ -53,5 +56,4 @@ class Dispatch {
             }
         }
     }
-
 }
