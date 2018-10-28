@@ -96,13 +96,14 @@ class Router
     private function matchRouter()
     {
         $this->chaveRotas = $this->request->getUrl();
-        if (isset($this->listaRotas[$this->chaveRotas]) or $this->chaveRotas) {
+           
+        if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {         
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
-            
+
             if ($rota) {
                 return $this->hasParametros($this->listaRotas[$this->chaveRotas]);
             }
-            
+
             echo new \Exception('Antenção, rota configurada deve estar com verbo errado ou falta parâmetros <br>');
         }
 
@@ -110,8 +111,10 @@ class Router
     }
 
     /**
-     * [Metodo responsável por iniciar a propriedade <i>rota</i> com um dos objetos
-     * MotaRota listados na propriedade <i>listaRota</i>]
+     * -----------------------------------------------------------------------------------------
+     * Metodo responsável por iniciar a propriedade <i>rota</i> com um dos objetos
+     * MotaRota listados na propriedade <i>listaRota</i>
+     *
      * @param MontarRota $rota - Objeto rota definido de acordo com request
      * @return boolean|MontarRota - retorna a rota de acordo com o verbo
      * configurado e o verbo solicitado na requisição e se também está correto
@@ -149,7 +152,7 @@ class Router
         }
 
         if ($rota->getVerbo() == 'POST') {
-            $this->request->setPost($rota->getParametros());
+            $this->request->setRequest($rota->getParametros());
             return $rota->getVerbo();
         }
 

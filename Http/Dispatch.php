@@ -4,6 +4,9 @@ namespace Http;
 
 use Http\Router;
 use App\Error\Error;
+use Http\Session;
+use Http\Response;
+use App\Controller\LoginController;
 
 /**
  * Classe (Padrão Factory): Responsável por carregar o controlador, método com
@@ -43,17 +46,34 @@ class Dispatch
      */
     public function run()
     {
+        
         $controller = $this->controllerNamespace . $this->router->getController();
         $method = $this->router->getMethod();
-
+        
+        if($method !== 'logar' and $controller !== '\App\Controller\PrincipalController')
+        {
+            $this->validaSessao();
+        }
+        
         if (class_exists($controller)) {
+            
             $controlador = new $controller($this->router->request);
-
             if (method_exists($controlador, $method)) {
                 $controlador->$method();
             } else {
-                throw new \Exception('O método passado na rota não existe');
+                throw new \Exception("O método $method passado na rota não existe");
             }
+        }
+    }
+    
+    public function validaSessao()
+    {
+        $login = new LoginController;
+
+        if (!$login->logado()) {
+
+             Response::view('login', false);
+             die();
         }
     }
 }

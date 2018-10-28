@@ -42,15 +42,38 @@ class Request
      * entidade que deverá ser acessada e a ação que deverá ser executada, o
      * restante são variáveis que alimentam os parametros vindas url query.
      */
+
+     /**
+      * ---------------------------------------------------------------------
+      * Undocumented variable
+      *
+      * @var [type]
+      */
+    private $arquivo;
+
+    /**
+     * ---------------------------------------------------------------------
+     * Undocumented variable
+     *
+     * @var [type]
+     */
+    private $servidor;
+
+    /**
+     * ---------------------------------------------------------------------
+     * Undocumented function
+     */
     public function __construct()
     {
+        $this->servidor = $_SERVER;
         if (isset($_GET["url"])) {
             $variaveis_url = explode('/', $_GET["url"]);
-
-            if (count($variaveis_url) > 1) {
-                $this->url = sprintf("%s.%s", array_shift($variaveis_url), array_shift($variaveis_url));
-            }
-
+            
+            
+            isset($_FILES['logo']) ? $this->arquivo = $_FILES : $this->arquivo = false;
+            // var_dump($this->arquivo);
+            $this->url = sprintf("%s.%s", array_shift($variaveis_url), array_shift($variaveis_url));
+            $this->trataUrl();
             $this->variaveis_url = array_filter($variaveis_url);
         }
     }
@@ -101,6 +124,13 @@ class Request
         return $this->url;
     }
 
+    private function trataUrl(){
+        $sem_metodo = array_filter(explode('.',$this->url));
+        if(count($sem_metodo) == 1) {
+             $this->url = array_shift($sem_metodo);
+        }
+    }
+
     /**
      * ---------------------------------------------------------------------<br>
      * [Retorna os parametros da url query, validada  com os parametros
@@ -122,4 +152,29 @@ class Request
     {
         return $this->request;
     }
+
+    /**
+     * ---------------------------------------------------------------------------
+     * Undocumented function
+     *
+     * @return void
+     */
+    public function guardaArquivo($nomelInput)
+    {
+        $diretorio = $this->servidor['DOCUMENT_ROOT'].'/recursos/imagem';
+        $uriFile = $diretorio.'/'.basename($this->arquivo[$nomelInput]['name']);
+        $arquivoTemp = $this->arquivo[$nomelInput]['tmp_name'];
+
+        if(move_uploaded_file($arquivoTemp, $uriFile)){
+            return basename($this->arquivo[$nomelInput]['name']);
+        }
+
+        return false;
+
+    }
+
+    public function existeArquivo($nomelInput){
+        return $this->arquivo[$nomelInput]['name'] ? $this->arquivo[$nomelInput] : false;
+    }
+    
 }

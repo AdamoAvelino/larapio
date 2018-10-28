@@ -23,7 +23,6 @@ class Autoloader
     public function loader($className)
     {
         $className = str_replace("\\", DIRECTORY_SEPARATOR, $className);
-
         $arquivo = $className . '.php';
 
         if (file_exists($arquivo)) {

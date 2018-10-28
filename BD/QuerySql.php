@@ -1,6 +1,10 @@
 <?php
 
-class MagicSql
+namespace BD;
+
+use BD\Db;
+
+class QuerySql
 {
 
     /**
@@ -11,15 +15,15 @@ class MagicSql
 
     /**
      * Guarda o nome do metodo magico quando invocado uma instrução SQL
-     * Pode ser (INSERT, UPDATE, SELECT, DELETE, WHERE, JOIN LEFT_JOIN, ON) 
+     * Pode ser (INSERT, UPDATE, SELECT, DELETE, WHERE, JOIN LEFT_JOIN, ON)
      * @var string
      */
     private $nome;
 
     /**
-     * Parametros disparados do metodo magico, para preencimento atributos e 
+     * Parametros disparados do metodo magico, para preencimento atributos e
      * valores do sql
-     * @var array 
+     * @var array
      */
     private $argumento;
 
@@ -27,7 +31,7 @@ class MagicSql
      * Armazena os valores dos dados para fazer o bind do stm do PDO
      * @var array
      */
-    private $dados;
+    public $dados;
 
     /**
      * Montar critéria de clausulas isoladas de WHERE e ON (em JONIS)
@@ -39,7 +43,7 @@ class MagicSql
     /**
      * Decide se a construção de valores do bind ficam entre parênteses em caso
      * de operações IN NOT IN ou VALUES da Instrução INSERT
-     * @var Bool 
+     * @var Bool
      */
     private $stringImplode;
 
@@ -50,26 +54,28 @@ class MagicSql
     private $operacaoCriteria;
 
     /**
-     * Faz a decisão de operadores IN e NOT IN, que são parametros em string e 
+     * Faz a decisão de operadores IN e NOT IN, que são parametros em string e
      * devem ser implodidos para um array e fazer o bind para stm do PDO
      * @var Bool
      */
     private $inNot;
 
+    private $bd;
+
     /**
-     * Operador Lógico AND que deve ser usado no ulotimo parametro do metodo 
-     * mágico em isolamentos das clausulas 
+     * Operador Lógico AND que deve ser usado no ulotimo parametro do metodo
+     * mágico em isolamentos das clausulas
      */
     const OP_AND = "AND";
 
     /**
-     * Operador Lógico OR que deve ser usado no ulotimo parametro do metodo 
-     * mágico em isolamentos das clausulas 
+     * Operador Lógico OR que deve ser usado no ulotimo parametro do metodo
+     * mágico em isolamentos das clausulas
      */
     const OP_OR = "OR";
 
     /**
-     * Operações que definirão 
+     * Operações que definirão
      */
     const OPERACOES = ['ON', 'WHERE', 'AND', 'OR', 'VALUES'];
 
@@ -80,14 +86,52 @@ class MagicSql
 
     public function __construct()
     {
-        
+        $this->bd = new Db();
     }
 
-    /**
+    /** Constroi a query de acordo com um metodo não declarado na classe.
+     * Os parametros servem para determinar a construção da string SQL
+     *
+     * <b> Metodos WHERE, ON AND, OR </b>
+     *
+     * Possiveis arrays em arguments:
+     * Em metodos WHERE, ON AND, OR deverão vir com um array de no minimo três posições
+     * [coluna, operador, valor]:
+     *
+     * No caso do operador de comparação BETWEEN deverão vir 4 posições
+     * [coluna, valor1, BETWEEN, valor2]
+     *
+     * No caso dos operadores IN e NOT IN também deverão vir com 3 posições, porém
+     * a terceira posição que representa os valores das colunas a serem trabalhadas,
+     * deverá ser uma string separadas por ',' :
+     * [coluna , (NOT IN | IN), 'v1, v2, v3,']
+     *
+     * Em caso de operações que devam avaliar valores nulos ou não nulos, apenas
+     * duas posições satisfaz o array:
+     * [coluna, (IS NULL | IS NOT NULL)]
+     *
+     * As operações lógicas (critérias), também pode serem feitas de forma isolada,
+     * assim compreendemos o caso: ((coluna1 > 3 or coluna2 = 'string') AND coluna3 IS NULL)
+     *
+     * Para construção desta clausula com criterias isoladas é necessário que haja
+     * mais de um array como argumentos com a ultima posição declarando uma das
+     * constant OP_OR ou OP_AND
+     *
+     * <b> Metodos VALUES e SET </b>
+     *
+     * O metodo VALUES e SET (operadore de insert e update respctivamente),
+     * carregará um array associativo com os nomes das colunas => valor
+     *
+     *
      * ---------------------------------------------------------------------<br>
-     * @param type $name
-     * @param type $arguments
-     * @return $this
+     * @param string $name O nome do metodo disparado, definirá as operações sql.
+     * @param array $arguments serão os atributos da query que serão trabalhados
+     * @return $this retorna objeto com seus atributos armazenados para que haja
+     * uma concatenação dos valores de cada operação solicitada
+     *
+     * @uses O parametro arguments pode ser um array contendo string ou um outro array
+     *
+     *
      */
     public function __call($name, $arguments)
     {
@@ -99,16 +143,18 @@ class MagicSql
         return $this;
     }
 
-    /**
+    /** Inicia a Montagem da Query, apatir deste metodo são tomadas todas as
+     * decisões para tratamento dos valores e montagem da query
+     *
      * ---------------------------------------------------------------------<br>
      *
+     * @return boolean
      */
     private function runSql()
     {
         if ($this->nome == 'VALUES') {
             $this->implodeString($this->nome);
             $this->argumento[0] = $this->sqlInsert($this->argumento[0]);
-//            var_dump($this->argumento);
         }
 
 
@@ -117,7 +163,7 @@ class MagicSql
         $this->sql .= " " . $nome;
 
         if (count($this->argumento) == 1 and is_string($this->argumento[0])) {
-            $this->queryString();
+            $this->sql .= " " . $this->argumento[0];
         }
 
         if ($this->nome == 'SET') {
@@ -126,24 +172,18 @@ class MagicSql
         }
 
         $this->queryArray();
-    }
 
-    /*
-     * ---------------------------------------------------------------------<br>
-     *
-     */
-
-    private function queryString()
-    {
-        $this->sql .= " " . $this->argumento[0];
+        return true;
     }
 
     /**
+     *
      * ---------------------------------------------------------------------<br>
      * @return boolean
      */
     private function queryArray()
     {
+        
         if (in_array($this->nome, self::OPERACOES)) {
             foreach ($this->argumento as $argumento) {
 
@@ -155,8 +195,6 @@ class MagicSql
                     $this->criteria = null;
                     return true;
                 }
-//                var_dump($this->nome);
-
 
                 $this->bindString($this->montarBind($argumento));
             }
@@ -166,26 +204,30 @@ class MagicSql
         }
     }
 
+    /**
+     * ---------------------------------------------------------------------<br>
+     * @param type $arg
+     * @return type
+     */
     private function sqlInsert($arg)
     {
         $colunasInto = implode(', ', array_keys($arg));
         $this->sql .= " (" . $colunasInto . ")";
-//        var_dump(array_values($arg));
         return array_values($arg);
     }
 
+    /**
+     * ---------------------------------------------------------------------<br>
+     */
     private function sqlUpdate()
     {
-        $valoresBind = $this->montarBind(array_values($this->argumento[0]));
-        $valoresBind = explode(',', ':' . implode(',:', $valoresBind));
-        $colunas = array_keys($this->argumento[0]);
-        $sql = implode(' = %s, ', $colunas) . ' = %s ';
-        $sql = vsprintf($sql, $valoresBind);
+        $sql = $this->bindString($this->montarBind(array_values($this->argumento[0])));
         $this->sql .= " " . $sql;
     }
 
     /**
      * ---------------------------------------------------------------------<br>
+     *
      * @param type $argumento
      * @return type
      */
@@ -216,13 +258,14 @@ class MagicSql
         $quantidadeAtribuicao = count($operacoes);
 
         $i = !in_array($this->nome, ['VALUES', 'SET']) ? 2 : 0;
+        $saoColunas = $i;
 
         for ($i; $i < $quantidadeAtribuicao; $i++) {
             $valorAtribuicao = $operacoes[$i];
 
             $verificacaoAlias = explode('.', $valorAtribuicao);
 
-            if ((count($verificacaoAlias) > 1 and is_numeric(current($verificacaoAlias))) or count($verificacaoAlias) == 1) {
+            if ((count($verificacaoAlias) > 1 and is_numeric(current($verificacaoAlias))) or count($verificacaoAlias) == 1 or ! $saoColunas) {
                 $this->dados[] = $this->formatarClausula($valorAtribuicao);
 
                 $operacoes[$i] = (count($this->dados) - 1);
@@ -230,6 +273,7 @@ class MagicSql
             }
             $operacoes[$i] = $valorAtribuicao;
         }
+
         return $operacoes;
     }
 
@@ -242,7 +286,7 @@ class MagicSql
     private function bindString($operacoes)
     {
         $atribuicaoBind = [];
-        if (is_array($operacoes)) {
+        if (is_array($operacoes) and $this->nome != 'SET') {
 
             $atributo = ($this->nome != 'VALUES') ? array_shift($operacoes) : '';
             $operador = ($this->nome != 'VALUES') ? strtoupper(array_shift($operacoes)) : '';
@@ -259,7 +303,14 @@ class MagicSql
             $atribuicaoCriteria = implode($separador, $atribuicaoBind);
             $atribuicaoCriteria = $this->inNot ? ' ( ' . $atribuicaoCriteria . ' ) ' : $atribuicaoCriteria;
             $this->criteria[] = $atributo . " " . $operador . " " . $atribuicaoCriteria;
-            return false;
+            return true;
+        }
+
+        if ($this->nome == 'SET') {
+            $valoresBind = explode(',', ':' . implode(',:', $operacoes));
+            $colunas = array_keys($this->argumento[0]);
+            $sql = implode(' = %s, ', $colunas) . ' = %s ';
+            return vsprintf($sql, $valoresBind);
         }
 
         return true;
@@ -276,7 +327,7 @@ class MagicSql
             return $dado;
         }
 
-        return "'$dado'";
+        return "$dado";
     }
 
     /**
@@ -290,83 +341,12 @@ class MagicSql
 
     public function getSql()
     {
-        var_dump($this->dados);
-        return $this->sql;
+        $sql =  $this->sql;
+        $this->sql = '';
+        $dados = $this->dados;
+        $this->dados = [];
+        // echo $sql;
+        return $this->bd->executar($sql, $dados);
+
     }
-
 }
-
-$select = new MagicSql;
-echo $select->select("id,nome, email,idade")
-        ->from('usuarios us')
-        ->left_join('empresa emp')
-        ->on(['emp.usuario', '=', 'us.contador'])
-        ->and(['data', 'BETWEEN', '2018-04-25', '2018-04-30'], ['nomero', 'not in', '1,2,3,5,6'], ['nome', 'LIKE', '%avelino%'], MagicSql::OP_OR)
-        ->where(["contador", "=", "50"])
-        ->or(["codigo", "=", "3"], ["contador", "<", 7], MagicSql::OP_AND)
-        ->and(["contador", "=", 55.4])
-        ->and(["coluna", "IS NULL"])
-        ->getSql();
-echo "<br>";
-echo "<br>";
-
-$insert = new MagicSql;
-echo $insert->insert()
-        ->into('pedido')
-        ->values(['valor' => 2350, 'numero' => 22, 'peso' => 2.5, 'descicao' => 'produto legal'])
-        ->where(["id", "=", 154])
-        ->getSql();
-echo "<br>";
-echo "<br>";
-
-$update = new MagicSql;
-echo $update->update('orcamento')
-        ->set(['valor' => 2500.32, 'endereco' => 3])
-        ->where(["id", "=", 154])
-        ->getSql();
-echo "<br>";
-echo "<br>";
-
-$delete = new MagicSql;
-echo $delete->delete()
-        ->from('pedidos')
-        ->where(["id", "=", 154])
-        ->getSql();
-echo "<br>";
-
-/**
- *
- * =====================Primeiro Teste=========================================
- */
-
-
-
-
-
-/**
- * Tratamentos de colunas com atribuiçoes de dois pontos
- * ***********************
- * values de insert
- * atribuições de update
- * ----------------------------------------------
- * Tratamento de stirng
- * ********************
- * Colunas de SELECT
- * -----------------------------------------------
- * Tratamentos de colunas Especiais com atribuição dos dois pontos
- * ****************************************************************
- * Operadores AND OR WHERE
- *
- */
-
-/**
- * Tratamentos de nomes composto
- * ******************************
- * Separação da composição do nome quando necessário, tanto para identificar
- * um lef/right JOIN com para verificar como para determinar um operação lógica
- * com isolamento de parenteses
- */
-
-/**
- * Sempre montar um array para tratamentos de valores de colunas que levan alias.
- */
