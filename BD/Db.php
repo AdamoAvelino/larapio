@@ -6,6 +6,7 @@ use \PDO;
 
 class Db extends PDO
 {
+
     const OPTIONS = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
 
     private $pdo;
@@ -16,14 +17,13 @@ class Db extends PDO
 
         if ($sgbd == 'mysql') {
             $dns = sprintf("%s:host=%s;port=%s;dbname=%s", $sgbd, $server, $porta, $banco);
-
-
         } elseif ($sgbd == 'sqlite') {
             $dns = sprintf("%s:%s", $sgbd, $server);
         }
 
 
         parent::__construct($dns, $usuario, $senha, self::OPTIONS);
+
     }
 
     /**
@@ -32,8 +32,10 @@ class Db extends PDO
      */
     private function getConfigDb()
     {
-        $config = parse_ini_file('config.ini');
-        return $config;
+        $config = parse_ini_file('config.ini', true);
+        extract($config);
+        return $banco_de_dados;
+
     }
 
     /**
@@ -47,16 +49,17 @@ class Db extends PDO
             $tipo = (is_int($val)) ? PDO::PARAM_INT : PDO::PARAM_STR;
             $stm->bindValue(":$chave", $val, $tipo);
         }
+
     }
 
     /**
      * ---------------------------------------------------------------------<br>
      * @param type $instrucao
      * @param type $bindValues
-     * @param type $fetch
+     * @param type $ignoreFech Quando precisar de um resultado que deva vir em array, enviar falso no parametro
      * @return type
      */
-    public function executar($instrucao, $bindValues = [], $fetch = PDO::FETCH_OBJ)
+    public function executar($instrucao, $ignoreFech, $bindValues = [])
     {
         $stm = $this->prepare($instrucao);
         if ($bindValues) {
@@ -67,9 +70,16 @@ class Db extends PDO
         $stm->execute();
         if (substr(ltrim($instrucao), 0, 6) == 'SELECT') {
 
-            return $stm->fetchAll($fetch);
+            $dataSetObject = $stm->fetchAll(PDO::FETCH_OBJ);
+            
+            if (count($dataSetObject) === 1 and $ignoreFech) {
+                return $dataSetObject[0];
+            }
+            return $dataSetObject;
         }
 
         return $this->lastInsertId();
+
     }
+
 }
