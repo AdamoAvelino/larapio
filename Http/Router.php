@@ -61,7 +61,7 @@ class Router
     /**
      * ---------------------------------------------------------------------<br>
      * [Metodo Monta todas as possiveis rotas através do objeto MontaRota]
-     * @param String $nome nome do metodo diparado, que servirá para decidir
+     * @param String $nome nome do metodo disparado, que servirá para decidir
      * qual verbo do HTTP será usado na requisição
      * <b>Opções</b>:
      * <ul>
@@ -96,18 +96,18 @@ class Router
     private function matchRouter()
     {
         $this->chaveRotas = $this->request->getUrl();
-           
-        if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {         
+        if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
-
+            
             if ($rota) {
                 return $this->hasParametros($this->listaRotas[$this->chaveRotas]);
             }
 
-            echo new \Exception('Antenção, rota configurada deve estar com verbo errado ou falta parâmetros <br>');
+            die(new \Exception('Antenção, rota configurada deve estar com verbo errado ou falta parâmetros <br>'));
         }
 
         return $this->listaRotas['default'];
+
     }
 
     /**
@@ -129,11 +129,10 @@ class Router
         }
 
         if ($this->matchParans($rota) == 'POST') {
-            if (count($this->request->getRequest()) == count($rota->getParametros())) {
-                return $rota;
-            }
+            return $rota;
         }
         return false;
+
     }
 
     /**
@@ -152,11 +151,12 @@ class Router
         }
 
         if ($rota->getVerbo() == 'POST') {
-            $this->request->setRequest($rota->getParametros());
+            $this->request->setRequest();
             return $rota->getVerbo();
         }
 
         throw new \Exception('Verb-http Não Foi Definido no Arquivo de Rota');
+
     }
 
     /**
@@ -167,6 +167,7 @@ class Router
     public function getController()
     {
         return $this->rota->getController();
+
     }
 
     /**
@@ -177,6 +178,7 @@ class Router
     public function getMethod()
     {
         return $this->rota->getMetodo();
+
     }
 
     /**
@@ -187,5 +189,7 @@ class Router
     public function getParams()
     {
         return $this->request->getParametros();
+
     }
+
 }

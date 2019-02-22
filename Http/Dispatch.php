@@ -33,6 +33,8 @@ class Dispatch
      * momento em que é instanciado]
      * @param Http\Router $router
      */
+    const AUTH = false;
+
     public function __construct(Router $router)
     {
         $this->router = $router;
@@ -49,9 +51,8 @@ class Dispatch
         
         $controller = $this->controllerNamespace . $this->router->getController();
         $method = $this->router->getMethod();
-        
-        if($method !== 'logar' and $controller !== '\App\Controller\PrincipalController')
-        {
+
+        if (self::AUTH and $method !== 'logar' and $controller !== '\App\Controller\PrincipalController') {
             $this->validaSessao();
         }
         
@@ -63,17 +64,20 @@ class Dispatch
             } else {
                 throw new \Exception("O método $method passado na rota não existe");
             }
+        } else {
+            throw new \Exception("O A classe  $controller passado na rota não existe");
         }
+
     }
-    
+
     public function validaSessao()
     {
         $login = new LoginController;
 
         if (!$login->logado()) {
 
-             Response::view('login', false);
-             die();
+            Response::view('login', false);
+            die();
         }
     }
 }

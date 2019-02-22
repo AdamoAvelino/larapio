@@ -43,12 +43,12 @@ class Request
      * restante são variáveis que alimentam os parametros vindas url query.
      */
 
-     /**
-      * ---------------------------------------------------------------------
-      * Undocumented variable
-      *
-      * @var [type]
-      */
+    /**
+     * ---------------------------------------------------------------------
+     * Undocumented variable
+     *
+     * @var [type]
+     */
     private $arquivo;
 
     /**
@@ -68,14 +68,17 @@ class Request
         $this->servidor = $_SERVER;
         if (isset($_GET["url"])) {
             $variaveis_url = explode('/', $_GET["url"]);
-            
-            
-            isset($_FILES['logo']) ? $this->arquivo = $_FILES : $this->arquivo = false;
-            // var_dump($this->arquivo);
+
+            count($_FILES) ? $this->arquivo = $_FILES : $this->arquivo = false;
+
             $this->url = sprintf("%s.%s", array_shift($variaveis_url), array_shift($variaveis_url));
             $this->trataUrl();
-            $this->variaveis_url = array_filter($variaveis_url);
+
+            $this->variaveis_url = array_filter($variaveis_url, function($valor) {
+                return ($valor === '0' or $valor);
+            });
         }
+
     }
 
     /**
@@ -101,17 +104,15 @@ class Request
      * @param array $parametros [uma lista de string que servirá para
      * determinar o nome das variavies vindas da requisição]
      */
-    public function setRequest(array $parametros)
+    public function setRequest()
     {
         if (isset($_POST)) {
-            foreach ($parametros as $key => $value) {
-                if (!isset($_POST[$value])) {
-                    echo new \Exception('Variável ' . $value . ' não identificada, verifique seu formulário');
-                }
+            foreach ($_POST as $key => $value) {
 
-                $this->request[$value] = $_POST[$value];
+                $this->request[$key] = $value;
             }
         }
+
     }
 
     /**
@@ -124,11 +125,17 @@ class Request
         return $this->url;
     }
 
-    private function trataUrl(){
-        $sem_metodo = array_filter(explode('.',$this->url));
-        if(count($sem_metodo) == 1) {
-             $this->url = array_shift($sem_metodo);
+    /**
+     * ---------------------------------------------------------------------<br>
+     * 
+     */
+    private function trataUrl()
+    {
+        $sem_metodo = array_filter(explode('.', $this->url));
+        if (count($sem_metodo) == 1) {
+            $this->url = array_shift($sem_metodo);
         }
+
     }
 
     /**
@@ -143,6 +150,7 @@ class Request
     }
 
     /**
+     * ---------------------------------------------------------------------<br> 
      * [Retorna os parametros os parametros submetidos pelo formulario que tenha
      * sido configurado com o method POST, validada  com os parametros
      * configurados na chamada da rota]
@@ -161,11 +169,27 @@ class Request
      */
     public function guardaArquivo($nomelInput)
     {
-        $diretorio = $this->servidor['DOCUMENT_ROOT'].'/recursos/imagem';
-        $uriFile = $diretorio.'/'.basename($this->arquivo[$nomelInput]['name']);
+        $diretorio = $this->servidor['DOCUMENT_ROOT'] . '/recursos/imagem';
+
+        if (is_array($this->arquivo[$nomelInput]['name'])) {
+            foreach ($this->arquivo[$nomelInput]['name'] as $index => $arquivo) {
+
+                $uriFile = $diretorio . '/' . basename($this->arquivo[$nomelInput]['name'][$index]);
+                $arquivoTemp = $this->arquivo[$nomelInput]['tmp_name'][$index];
+
+                if (move_uploaded_file($arquivoTemp, $uriFile)) {
+                    $urls[] = basename($this->arquivo[$nomelInput]['name'][$index]);
+                } else {
+                    $urls[] = basename($this->arquivo[$nomelInput]['name'][$index]) . " Falhou";
+                }
+            }
+            return $urls;
+        }
+
+        $uriFile = $diretorio . '/' . basename($this->arquivo[$nomelInput]['name']);
         $arquivoTemp = $this->arquivo[$nomelInput]['tmp_name'];
 
-        if(move_uploaded_file($arquivoTemp, $uriFile)){
+        if (move_uploaded_file($arquivoTemp, $uriFile)) {
             return basename($this->arquivo[$nomelInput]['name']);
         }
 
@@ -173,8 +197,26 @@ class Request
 
     }
 
-    public function existeArquivo($nomelInput){
+    /**
+     * ---------------------------------------------------------------------<br> 
+     * @param type $nomelInput
+     * @return type
+     */
+    public function existeArquivo($nomelInput)
+    {
         return $this->arquivo[$nomelInput]['name'] ? $this->arquivo[$nomelInput] : false;
+
     }
-    
+
+    /**
+     * ---------------------------------------------------------------------<br> 
+     * @param type $nomeInput
+     * @return type
+     */
+    public function getArquivo($nomeInput)
+    {
+        return $this->arquivo[$nomeInput];
+
+    }
+
 }

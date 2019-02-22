@@ -59,7 +59,6 @@ class QuerySql
      * @var Bool
      */
     private $inNot;
-
     private $bd;
 
     /**
@@ -87,6 +86,7 @@ class QuerySql
     public function __construct()
     {
         $this->bd = new Db();
+
     }
 
     /** Constroi a query de acordo com um metodo não declarado na classe.
@@ -141,6 +141,7 @@ class QuerySql
 
         $this->runSql();
         return $this;
+
     }
 
     /** Inicia a Montagem da Query, apatir deste metodo são tomadas todas as
@@ -162,7 +163,7 @@ class QuerySql
 
         $this->sql .= " " . $nome;
 
-        if (count($this->argumento) == 1 and is_string($this->argumento[0])) {
+        if (count($this->argumento) == 1 and ( is_string($this->argumento[0]) or is_int($this->argumento[0]))) {
             $this->sql .= " " . $this->argumento[0];
         }
 
@@ -174,6 +175,7 @@ class QuerySql
         $this->queryArray();
 
         return true;
+
     }
 
     /**
@@ -183,7 +185,7 @@ class QuerySql
      */
     private function queryArray()
     {
-        
+
         if (in_array($this->nome, self::OPERACOES)) {
             foreach ($this->argumento as $argumento) {
 
@@ -202,6 +204,7 @@ class QuerySql
             $this->sql .= ' ( ' . $this->criteria[0] . ' ) ';
             $this->criteria = null;
         }
+
     }
 
     /**
@@ -214,6 +217,7 @@ class QuerySql
         $colunasInto = implode(', ', array_keys($arg));
         $this->sql .= " (" . $colunasInto . ")";
         return array_values($arg);
+
     }
 
     /**
@@ -223,6 +227,7 @@ class QuerySql
     {
         $sql = $this->bindString($this->montarBind(array_values($this->argumento[0])));
         $this->sql .= " " . $sql;
+
     }
 
     /**
@@ -244,6 +249,7 @@ class QuerySql
         }
 
         return $argumento;
+
     }
 
     /**
@@ -253,7 +259,8 @@ class QuerySql
      */
     private function montarBind($operacoes)
     {
-        $this->operacaoCriteria = strtoupper($operacoes[1]);
+
+        $this->operacaoCriteria = isset($operacoes[1]) ? strtoupper($operacoes[1]) : '';
 
         $quantidadeAtribuicao = count($operacoes);
 
@@ -275,6 +282,7 @@ class QuerySql
         }
 
         return $operacoes;
+
     }
 
     /**
@@ -314,6 +322,7 @@ class QuerySql
         }
 
         return true;
+
     }
 
     /**
@@ -328,6 +337,7 @@ class QuerySql
         }
 
         return "$dado";
+
     }
 
     /**
@@ -337,16 +347,18 @@ class QuerySql
     private function implodeString($operador)
     {
         $this->stringImplode = ($operador == 'VALUES' or in_array($operador, self::OPERADORES));
+
     }
 
-    public function getSql()
+    public function getSql($ignoreFech = true)
     {
-        $sql =  $this->sql;
+        $sql = $this->sql;
         $this->sql = '';
         $dados = $this->dados;
         $this->dados = [];
-        // echo $sql;
-        return $this->bd->executar($sql, $dados);
+//        var_dump($sql);
+        return $this->bd->executar($sql, $ignoreFech, $dados);
 
     }
+
 }
