@@ -89,7 +89,7 @@ class Request
      * @param array $parametroRota [uma lista de string que servirá para
      * determinar o nome das variavies vindas da requisição]
      */
-    public function setGet(array $parametroRota)
+    public function setQuery(array $parametroRota)
     {
         for ($i = 0; $i < count($this->variaveis_url); $i++) {
             $this->query[$parametroRota[$i]] = $this->variaveis_url[$i];

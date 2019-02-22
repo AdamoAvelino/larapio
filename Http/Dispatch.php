@@ -48,7 +48,13 @@ class Dispatch
      */
     public function run()
     {
-        
+        if(is_callable($this->router->getController())){
+            $callback = $this->router->getController();
+            $callback();
+            return true;
+        }
+
+
         $controller = $this->controllerNamespace . $this->router->getController();
         $method = $this->router->getMethod();
 

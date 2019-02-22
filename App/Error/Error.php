@@ -7,6 +7,10 @@ namespace App\Error;
 */
 class Error
 {
+    public function __construct()
+    {
+        
+    }
     /**
      * Mostra o erro na tela
      * @param string $message

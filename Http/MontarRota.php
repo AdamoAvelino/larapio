@@ -47,12 +47,18 @@ class MontarRota
 
     /**
      * ----------------------------------------------------------------------<br>
-     * [Metodo que define qual controller e qual metodo será executado]
-     * @param type $argumento [argumento vindos do metodo magico __call da
-     * classe Route]
+     *  [Metodo que define qual controller e qual metodo será executado]
+     * Recebe o segundo parametro enviado pelo metodo router do Objeto Router utiliza
+     * utiliza o explode para separar strings que serão o Controllers e o Médodo de Ação  
+     * @param String $argumento Duas paravras delimitadas por ".(ponto)".
+     * 
      */
     public function setControllerMetodo($argumento)
     {
+        if(is_callable($argumento)){
+            $this->controller = $argumento;
+            return true;
+        }
         $ControllerMetodo = explode('.', $argumento);
         $this->controller = $ControllerMetodo[0];
         $this->metodo = $ControllerMetodo[1];
@@ -60,11 +66,15 @@ class MontarRota
 
     /**
      * ---------------------------------------------------------------------<br>
-     * Metodo Responsável pela configuração dos parametros e o nome da rota
-     *  configurados no metodo mágico do Objeto Rota
-     *
-     * @param type $argumento [argumento vindos do metodo magico __call da
-     * classe Route]
+     * Metodo Responsável pela configuração dos parametros e o nome da rota.
+     * Parametros são strings envolvidas por "{}(chaves)" para serem utilizadas em
+     * metodos de ação de um determinado controller. As strings que não são envolvidas
+     * por "{}(chaves)", serão configuradas como nome de rotas em um array que determinará
+     * toda a ação a ser executada.
+     * @param string $argumento string com palavras delimitadas por "/(barras), que são definidas
+     * como nome de rota ou parametros que servirão de informação para execução das ações.
+     * @example Primeiro parametro do metodo router da classe Roter invocado no arquivo rotas.php:
+     * produto/listar/{codigo}/{fornecedor}
      */
     public function setParametros($argumento)
     {
@@ -77,8 +87,12 @@ class MontarRota
             }
             $nomeRota[] = $param;
         }
+        //  die(var_dump($parametros));
 
-        $this->nomeRota = isset($nomeRota) ? implode('.', $nomeRota) : 'default';
+         $this->nomeRota = isset($nomeRota) ?  implode('.', $nomeRota) : 'raiz';
+
+        // var_dump($this->nomeRota);
+        // var_dump($this->parametros);
     }
 
     /**

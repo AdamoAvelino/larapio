@@ -1,7 +1,11 @@
 <?php
 
 //Inclui o arquivo que possui a classe de autoloader
-require_once('Autoloader/Autoloader.php');
+require_once 'Autoloader/Autoloader.php';
+
+use Http\Router;
+use Http\Request;
+use Http\Dispatch;
 
 //Instancia a classe de autoloader
 $autoloader = new Autoloader();
@@ -9,18 +13,18 @@ $autoloader = new Autoloader();
 //Registra no php para usar esse autoloader
 $autoloader->registrar();
 
-include_once 'rotas.php';
+//Configuração de rotas 
+$router = new Router();
+require_once 'rotas.php';
 
 //Cria uma instância da classe Request
-$request = new Http\Request();
+$request = new Request();
 
 //Cria uma instancia da classe router passando o request
-
-
 $router->setRequest($request);
 
 //Cria uma instancia da classe dispatch passando router
-$dispatch = new Http\Dispatch($router);
+$dispatch = new Dispatch($router);
 
 
 try {

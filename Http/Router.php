@@ -75,15 +75,21 @@ class Router
     public function __call($nome, $argumentos)
     {
         if (!in_array($nome, self::VERBO)) {
-            echo new \Exception('Houve Algum erro na configuração das rotas');
+            $erro = new \App\Error\Error();
+            $erro->show(new \Exception('Houve Algum erro na configuração das rotas'));
+            exit();
         }
-        $montarRota = new MontarRota(strtoupper($nome));
 
+        
+
+        $montarRota = new MontarRota(strtoupper($nome));
+    
         $montarRota->setParametros($argumentos[0]);
 
         $montarRota->setControllerMetodo($argumentos[1]);
 
         $this->listaRotas[$montarRota->getNomeRotas()] = $montarRota;
+        // var_dump($montarRota);
     }
 
     /**
@@ -95,18 +101,21 @@ class Router
      */
     private function matchRouter()
     {
+        var_dump($this->request->getUrl());
         $this->chaveRotas = $this->request->getUrl();
         if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {
+            // var_dump($this->listaRotas);
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
             
             if ($rota) {
-                return $this->hasParametros($this->listaRotas[$this->chaveRotas]);
+                return $rota;
             }
 
             die(new \Exception('Antenção, rota configurada deve estar com verbo errado ou falta parâmetros <br>'));
         }
 
-        return $this->listaRotas['default'];
+        // return $this->listaRotas['default'];
+        return false;
 
     }
 
@@ -146,7 +155,7 @@ class Router
     private function matchParans(MontarRota $rota)
     {
         if ($rota->getVerbo() == 'GET') {
-            $this->request->setGet($rota->getParametros());
+            $this->request->setQuery($rota->getParametros());
             return $rota->getVerbo();
         }
 
@@ -166,6 +175,7 @@ class Router
      */
     public function getController()
     {
+        // var_dump($this->rota);
         return $this->rota->getController();
 
     }
