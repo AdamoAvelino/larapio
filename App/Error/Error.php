@@ -18,6 +18,6 @@ class Error
      */
     public static function show($message)
     {
-        echo $message;
+        die($message);
     }
 }
