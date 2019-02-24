@@ -55,7 +55,7 @@ class MontarRota
      */
     public function setControllerMetodo($argumento)
     {
-        if(is_callable($argumento)){
+        if (is_callable($argumento)) {
             $this->controller = $argumento;
             return true;
         }
@@ -79,7 +79,7 @@ class MontarRota
     public function setParametros($argumento)
     {
         $parametros = array_filter(explode('/', $argumento));
-    
+
         foreach ($parametros as $param) {
             if (preg_match('#{#', $param)) {
                 $this->parametros[] = preg_replace('#{|}#', '', $param);
@@ -87,12 +87,16 @@ class MontarRota
             }
             $nomeRota[] = $param;
         }
-        //  die(var_dump($parametros));
 
-         $this->nomeRota = isset($nomeRota) ?  implode('.', $nomeRota) : 'raiz';
+        if(isset($nomeRota) or $argumento){
 
-        // var_dump($this->nomeRota);
-        // var_dump($this->parametros);
+            $this->nomeRota = isset($nomeRota) ? implode('.', $nomeRota) : $argumento;
+            return true;
+        }
+
+        $error = new \App\Error\Error();
+        $error->show('Nome da rota não foi definido');
+        
     }
 
     /**

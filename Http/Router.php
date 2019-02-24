@@ -89,7 +89,7 @@ class Router
         $montarRota->setControllerMetodo($argumentos[1]);
 
         $this->listaRotas[$montarRota->getNomeRotas()] = $montarRota;
-        // var_dump($montarRota);
+        
     }
 
     /**
@@ -101,21 +101,20 @@ class Router
      */
     private function matchRouter()
     {
-        var_dump($this->request->getUrl());
-        $this->chaveRotas = $this->request->getUrl();
+        
+        $this->chaveRotas = $this->request->getUrl() ? : '/';
+        
         if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {
-            // var_dump($this->listaRotas);
+            
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
             
             if ($rota) {
                 return $rota;
             }
 
-            die(new \Exception('Antenção, rota configurada deve estar com verbo errado ou falta parâmetros <br>'));
         }
-
-        // return $this->listaRotas['default'];
-        return false;
+        $error = new \App\Error\Error();
+        $error->show('Antenção, Erro na configuração de rotas');
 
     }
 
@@ -175,9 +174,7 @@ class Router
      */
     public function getController()
     {
-        // var_dump($this->rota);
         return $this->rota->getController();
-
     }
 
     /**
