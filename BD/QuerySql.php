@@ -1,8 +1,8 @@
 <?php
 
-namespace BD;
+namespace Larapio\BD;
 
-use BD\Db;
+use Larapio\BD\Db;
 
 class QuerySql
 {
@@ -95,7 +95,7 @@ class QuerySql
      * <b> Metodos WHERE, ON AND, OR </b>
      *
      * Possiveis arrays em arguments:
-     * Em metodos WHERE, ON AND, OR deverão vir com um array de no minimo três posições
+     * Em metodos WHERE, ON, AND, OR deverão vir com um array de no minimo três posições
      * [coluna, operador, valor]:
      *
      * No caso do operador de comparação BETWEEN deverão vir 4 posições
@@ -198,7 +198,7 @@ class QuerySql
                     return true;
                 }
 
-                $this->bindString($this->montarBind($argumento));
+                $this->bindString( (array) $this->montarBind($argumento));
             }
 
             $this->sql .= ' ( ' . $this->criteria[0] . ' ) ';
@@ -212,7 +212,7 @@ class QuerySql
      * @param type $arg
      * @return type
      */
-    private function sqlInsert($arg)
+    private function sqlInsert(array $arg)
     {
         $colunasInto = implode(', ', array_keys($arg));
         $this->sql .= " (" . $colunasInto . ")";
@@ -225,7 +225,8 @@ class QuerySql
      */
     private function sqlUpdate()
     {
-        $sql = $this->bindString($this->montarBind(array_values($this->argumento[0])));
+        $bind = (array) $this->montarBind(array_values($this->argumento[0]));
+        $sql = $this->bindString($bind);
         $this->sql .= " " . $sql;
 
     }
@@ -236,7 +237,7 @@ class QuerySql
      * @param type $argumento
      * @return type
      */
-    private function verificarOperacao($argumento)
+    private function verificarOperacao(array $argumento)
     {
 
         $this->inNot = (count($argumento) > 1 and in_array(strtoupper($argumento[1]), self::OPERADORES));
@@ -291,7 +292,7 @@ class QuerySql
      * @param type $operacoes
      * @return boolean
      */
-    private function bindString($operacoes)
+    private function bindString( array $operacoes)
     {
         $atribuicaoBind = [];
         if (is_array($operacoes) and $this->nome != 'SET') {

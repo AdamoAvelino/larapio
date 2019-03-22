@@ -1,9 +1,10 @@
 <?php
 
-namespace Http;
+namespace Larapio\Http;
 
-use Http\Session;
-
+use Larapio\Http\Session;
+use Twig\Loader\FilesystemLoader;
+use Twig\Environment;
 
 class Response
 {
@@ -28,7 +29,7 @@ class Response
         return self::$response;
     }
 
-    public static function view($view, $corpo = true)
+    public static function view($view)
     {
         if(self::$objeto) {
             extract(self::$objeto);
@@ -36,14 +37,17 @@ class Response
 
         $sessao = new Session();
 
-        if($corpo){
-            include 'view/header.php';
-        }
-
-        include 'view/'.$view.'.php';
+        $template = self::template();
         
-        if($corpo){
-            include 'view/footer.php';
-        }
+        echo $template->render($view.'.html', self::$objeto);
+        
+    }
+
+
+    private function template()
+    {
+        $loader = new FilesystemLoader('view');
+        return new Environment($loader);
+ 
     }
 }

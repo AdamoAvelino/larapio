@@ -1,6 +1,6 @@
 <?php
 
-use Http\Response;
+use Larapio\Http\Response;
 
 $router->get('/', function(){
   Response::view('home');

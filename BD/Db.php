@@ -1,6 +1,6 @@
 <?php
 
-namespace BD;
+namespace Larapio\BD;
 
 use \PDO;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace BD;
+namespace Larapio\BD;
 
-use BD\QuerySql;
+use Larapio\BD\QuerySql;
 
 class Model
 {
@@ -21,7 +21,6 @@ class Model
     {
         $this->query = new QuerySql;
         $this->table = $this->nome_tabela($this);
-
     }
 
     /**
@@ -35,7 +34,6 @@ class Model
     {
         $classe = explode('\\', get_class($model));
         return strtolower((end($classe)));
-
     }
 
     /**
@@ -47,11 +45,10 @@ class Model
     public function all()
     {
         $this->result = $this->query->select('*')
-                ->from($this->table)
-                ->getSql();
+            ->from($this->table)
+            ->getSql();
 
         return $this->result;
-
     }
 
     /**
@@ -64,12 +61,11 @@ class Model
     public function get($id)
     {
         $this->result = $this->query->select('*')
-                ->from($this->table)
-                ->where(['id', '=', $id])
-                ->getSql();
+            ->from($this->table)
+            ->where(['id', '=', $id])
+            ->getSql();
 
         return $this->result;
-
     }
 
     /**
@@ -81,10 +77,9 @@ class Model
     public function update($coluna, $id)
     {
         $this->result = $this->query->update($this->table)
-                ->set($coluna)
-                ->where(['id', '=', $id])
-                ->getSql();
-
+            ->set($coluna)
+            ->where(['id', '=', $id])
+            ->getSql();
     }
 
     /**
@@ -98,14 +93,13 @@ class Model
     public function insert($valores)
     {
         $this->result = $this->query->insert()
-                ->into($this->table)
-                ->values($valores)
-                ->getSql();
+            ->into($this->table)
+            ->values($valores)
+            ->getSql();
 
 
 
         return $this->result;
-
     }
 
     /**
@@ -118,10 +112,8 @@ class Model
     public function delete($id)
     {
         $this->query->delete()
-                ->from($this->table)
-                ->where(['id', '=', $id])
-                ->getSql();
-
+            ->from($this->table)
+            ->where(['id', '=', $id])
+            ->getSql();
     }
-
 }

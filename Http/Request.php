@@ -1,6 +1,6 @@
 <?php
 
-namespace Http;
+namespace Larapio\Http;
 
 /**
  * [classe responsável por pegar a URL e separar em partes, definindo suas
@@ -34,7 +34,14 @@ class Request
      * posição, represetam valores dos parametros enviados pela requisição,apenas
      * quando o verbo <i>HTTP = GET</i> ]
      */
-    private $variaveis_url;
+    public $variaveis_url;
+
+    /**
+     * Undocumented variable
+     *
+     * @var [type]
+     */
+    public $method;
 
     /**
      * ---------------------------------------------------------------------<br>
@@ -66,6 +73,8 @@ class Request
     public function __construct()
     {
         $this->servidor = $_SERVER;
+        $this->method = $this->servidor['REQUEST_METHOD'];
+        
         if (isset($_GET["url"])) {
             $variaveis_url = explode('/', $_GET["url"]);
 

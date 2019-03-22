@@ -1,9 +1,9 @@
 <?php
 
-namespace Http;
+namespace Larapio\Http;
 
-use Http\MontarRota;
-use Http\Request;
+use Larapio\Http\MontarRota;
+use Larapio\Http\Request;
 
 /**
  * Classe responsável por montar e verificar se as requisições confere com algum rota
@@ -80,16 +80,14 @@ class Router
             exit();
         }
 
-        
 
         $montarRota = new MontarRota(strtoupper($nome));
-    
+
         $montarRota->setParametros($argumentos[0]);
 
         $montarRota->setControllerMetodo($argumentos[1]);
 
         $this->listaRotas[$montarRota->getNomeRotas()] = $montarRota;
-        
     }
 
     /**
@@ -101,21 +99,19 @@ class Router
      */
     private function matchRouter()
     {
-        
-        $this->chaveRotas = $this->request->getUrl() ? : '/';
-        
+
+        $this->chaveRotas = $this->request->getUrl() ?: '/';
+
         if ($this->chaveRotas and isset($this->listaRotas[$this->chaveRotas])) {
-            
+
             $rota = $this->hasParametros($this->listaRotas[$this->chaveRotas]);
-            
+
             if ($rota) {
                 return $rota;
             }
-
         }
         $error = new \App\Error\Error();
         $error->show('Antenção, Erro na configuração de rotas');
-
     }
 
     /**
@@ -130,17 +126,19 @@ class Router
      */
     private function hasParametros(MontarRota $rota)
     {
-        if ($this->matchParans($rota) == 'GET') {
-            if (count($this->request->getQuery()) == count($rota->getParametros())) {
-                return $rota;
-            }
+
+        if ($rota->getVerbo() == 'GET') {
+            $this->request->setQuery($rota->getParametros());
         }
 
-        if ($this->matchParans($rota) == 'POST') {
+        if ($rota->getVerbo() == 'POST') {
+            $this->request->setRequest();
+        }
+
+        if ($this->matchParans($rota, $rota->getVerbo())) {
+
             return $rota;
         }
-        return false;
-
     }
 
     /**
@@ -151,20 +149,22 @@ class Router
      * configurações da rota em questão]
      * @return String [Verbo configurado na rota]
      */
-    private function matchParans(MontarRota $rota)
+    private function matchParans(MontarRota $rota, $verbo)
     {
-        if ($rota->getVerbo() == 'GET') {
-            $this->request->setQuery($rota->getParametros());
-            return $rota->getVerbo();
+        if ($verbo == $this->request->method) {
+            if (count($this->request->getQuery()) == count($rota->getParametros())) {
+                return $rota;
+            }
         }
 
-        if ($rota->getVerbo() == 'POST') {
-            $this->request->setRequest();
-            return $rota->getVerbo();
+        if($verbo == $this->request->method){
+            if(count($this->request->variaveis_url) == 0 and count($rota->getParametros()) == 0) {
+                return $rota;
+            }
         }
 
-        throw new \Exception('Verb-http Não Foi Definido no Arquivo de Rota');
-
+        $erro = new \App\Error\Error();
+        $erro->show('Configuração da rota incorreta: Verifique o VERBO ou os {PARAMETROS}');
     }
 
     /**
@@ -185,7 +185,6 @@ class Router
     public function getMethod()
     {
         return $this->rota->getMetodo();
-
     }
 
     /**
@@ -196,7 +195,5 @@ class Router
     public function getParams()
     {
         return $this->request->getParametros();
-
     }
-
 }

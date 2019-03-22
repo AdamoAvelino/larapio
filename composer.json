@@ -1,0 +1,24 @@
+{
+    "name": "framework/larapio",
+    "description": "\"Um framework simples para trabalhar com projetos pequesnos\"",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adamo Avelino",
+            "email": "adamo.avelino@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Larapio\\": ""
+        }
+    },
+    
+    "require": {
+        "php": ">=5.5.9",
+        "twig/twig" : "1.34.*",
+        "hashids/hashids": "1.0.*"
+    }
+}

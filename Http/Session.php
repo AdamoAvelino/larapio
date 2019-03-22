@@ -1,6 +1,6 @@
 <?php
 
-namespace Http;
+namespace Larapio\Http;
 
 /**
  * Monta uma sessão com variaveis que for necessária e com configuração de

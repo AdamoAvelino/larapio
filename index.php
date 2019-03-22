@@ -1,17 +1,18 @@
 <?php
 
 //Inclui o arquivo que possui a classe de autoloader
-require_once 'Autoloader/Autoloader.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-use Http\Router;
-use Http\Request;
-use Http\Dispatch;
+use Larapio\Http\Router;
+use Larapio\Http\Request;
+use Larapio\Http\Dispatch;
 
 //Instancia a classe de autoloader
-$autoloader = new Autoloader();
+
+//$autoloader = new Autoloader();
 
 //Registra no php para usar esse autoloader
-$autoloader->registrar();
+//$autoloader->registrar();
 
 //Configuração de rotas 
 $router = new Router();
@@ -32,5 +33,5 @@ try {
     $dispatch->run();
 } catch (Exception $ex) {
     //Caso algum erro aconteça usamos essa classe para exibir.
-    App\Error\Error::show($ex->getMessage());
+    Larapio\App\Error\Error::show($ex->getMessage());
 }

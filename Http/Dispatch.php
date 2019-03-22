@@ -1,12 +1,12 @@
 <?php
 
-namespace Http;
+namespace Larapio\Http;
 
-use Http\Router;
-use App\Error\Error;
-use Http\Session;
-use Http\Response;
-use App\Controller\LoginController;
+use Larapio\Http\Router;
+use Larapio\App\Error\Error;
+use Larapio\Http\Session;
+use Larapio\Http\Response;
+use Larapio\App\Controller\LoginController;
 
 /**
  * Classe (Padrão Factory): Responsável por carregar o controlador, método com

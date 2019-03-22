@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Error;
+namespace Larapio\App\Error;
 
 /**
 *	Classe responsável por exibir erros
